@@ -48,5 +48,5 @@ class AggPredictor(nn.Module):
         att = self.softmax(att_val.view(B*4, -1)).view(B, 4, -1)
 
         K_agg = (h_enc.unsqueeze(1) * att.unsqueeze(3)).sum(2)
-        agg_score = self.agg_out(self.agg_out_K(K_agg) + self.col_out_col(col_emb)).squeeze()
+        agg_score = self.agg_out(self.agg_out_K(K_agg) + self.col_out_col(col_emb)).squeeze(2)
         return agg_score

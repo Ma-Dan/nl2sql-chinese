@@ -97,7 +97,7 @@ class SQLNetCondPredictor(nn.Module):
         # First use column embeddings to calculate the initial hidden unit
         # Then run the LSTM and predict condition number.
         e_num_col, col_num = col_name_encode(col_inp_var, col_name_len, col_len, self.cond_num_name_enc)
-        num_col_att_val = self.cond_num_col_att(e_num_col).squeeze()
+        num_col_att_val = self.cond_num_col_att(e_num_col).squeeze(2)
         for idx, num in enumerate(col_num):
             if num < max(col_num):
                 num_col_att_val[idx, num:] = -100
@@ -109,7 +109,7 @@ class SQLNetCondPredictor(nn.Module):
         h_num_enc, _ = run_lstm(self.cond_num_lstm, x_emb_var, x_len,
                 hidden=(cond_num_h1, cond_num_h2))
 
-        num_att_val = self.cond_num_att(h_num_enc).squeeze()
+        num_att_val = self.cond_num_att(h_num_enc).squeeze(2)
 
         for idx, num in enumerate(x_len):
             if num < max_x_len:
@@ -133,7 +133,7 @@ class SQLNetCondPredictor(nn.Module):
                 (-1, max_x_len))).view(B, -1, max_x_len)
             K_cond_col = (h_col_enc.unsqueeze(1) * col_att.unsqueeze(3)).sum(2)
         else:
-            col_att_val = self.cond_col_att(h_col_enc).squeeze()
+            col_att_val = self.cond_col_att(h_col_enc).squeeze(2)
             for idx, num in enumerate(x_len):
                 if num < max_x_len:
                     col_att_val[idx, num:] = -100
@@ -142,7 +142,7 @@ class SQLNetCondPredictor(nn.Module):
                     col_att_val.unsqueeze(2)).sum(1).unsqueeze(1)
 
         cond_col_score = self.cond_col_out(self.cond_col_out_K(K_cond_col) +
-                self.cond_col_out_col(e_cond_col)).squeeze()
+                self.cond_col_out_col(e_cond_col)).squeeze(2)
         max_col_num = max(col_num)
         for b, num in enumerate(col_num):
             if num < max_col_num:
@@ -173,14 +173,14 @@ class SQLNetCondPredictor(nn.Module):
 
         if self.use_ca:
             op_att_val = torch.matmul(self.cond_op_att(h_op_enc).unsqueeze(1),
-                    col_emb.unsqueeze(3)).squeeze()
+                    col_emb.unsqueeze(3)).squeeze(2)
             for idx, num in enumerate(x_len):
                 if num < max_x_len:
                     op_att_val[idx, :, num:] = -100
             op_att = self.softmax(op_att_val.view(B*4, -1)).view(B, 4, -1)
             K_cond_op = (h_op_enc.unsqueeze(1) * op_att.unsqueeze(3)).sum(2)
         else:
-            op_att_val = self.cond_op_att(h_op_enc).squeeze()
+            op_att_val = self.cond_op_att(h_op_enc).squeeze(2)
             for idx, num in enumerate(x_len):
                 if num < max_x_len:
                     op_att_val[idx, num:] = -100
@@ -188,7 +188,7 @@ class SQLNetCondPredictor(nn.Module):
             K_cond_op = (h_op_enc * op_att.unsqueeze(2)).sum(1).unsqueeze(1)
 
         cond_op_score = self.cond_op_out(self.cond_op_out_K(K_cond_op) +
-                self.cond_op_out_col(col_emb)).squeeze()
+                self.cond_op_out_col(col_emb)).squeeze(2)
 
         #Predict the string of conditions
         h_str_enc, _ = run_lstm(self.cond_str_lstm, x_emb_var, x_len)
@@ -213,7 +213,7 @@ class SQLNetCondPredictor(nn.Module):
 
             cond_str_score = self.cond_str_out(
                     self.cond_str_out_h(h_ext) + self.cond_str_out_g(g_ext) +
-                    self.cond_str_out_col(col_ext)).squeeze()
+                    self.cond_str_out_col(col_ext)).squeeze(2)
             for b, num in enumerate(x_len):
                 if num < max_x_len:
                     try:
@@ -243,7 +243,7 @@ class SQLNetCondPredictor(nn.Module):
 
                 cur_cond_str_score = self.cond_str_out(
                         self.cond_str_out_h(h_ext) + self.cond_str_out_g(g_ext)
-                        + self.cond_str_out_col(col_ext)).squeeze()
+                        + self.cond_str_out_col(col_ext)).squeeze(2)
                 for b, num in enumerate(x_len):
                     if num < max_x_len:
                         cur_cond_str_score[b, :, num:] = -100

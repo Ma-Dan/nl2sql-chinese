@@ -32,7 +32,7 @@ class WhereRelationPredictor(nn.Module):
         # Then run the LSTM and predict select number
         e_num_col, col_num = col_name_encode(col_inp_var, col_name_len,
                                              col_len, self.where_rela_lstm)
-        col_att_val = self.where_rela_col_att(e_num_col).squeeze()
+        col_att_val = self.where_rela_col_att(e_num_col).squeeze(2)
         for idx, num in enumerate(col_num):
             if num < max(col_num):
                 col_att_val[idx, num:] = -1000000
@@ -43,7 +43,7 @@ class WhereRelationPredictor(nn.Module):
 
         h_enc, _ = run_lstm(self.where_rela_lstm, x_emb_var, x_len, hidden=(h1, h2))
 
-        att_val = self.where_rela_att(h_enc).squeeze()
+        att_val = self.where_rela_att(h_enc).squeeze(2)
         for idx, num in enumerate(x_len):
             if num < max_x_len:
                 att_val[idx, num:] = -1000000

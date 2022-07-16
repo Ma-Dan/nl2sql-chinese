@@ -166,6 +166,29 @@ def predict_test(model_bert, tokenizer,model, batch_size, sql_data, table_data, 
             # fw.writelines(json.dumps(sql_pred,ensure_ascii=False).encode('utf-8')+'\n')
     fw.close()
 
+def to_batch_seq_predict(sql_data, table_data):
+    q_seq = []
+    col_seq = []
+    col_num = []
+    raw_seq = []
+    table_ids = []
+
+    sql = sql_data
+    q_seq.append([char for char in sql['question'] if char !=' '])
+    col_seq.append([[char for char in header] for header in table_data])
+    col_num.append(len(table_data))
+    raw_seq.append(sql['question'])
+    table_ids.append(sql_data['table_id'])
+
+    return q_seq, col_seq, col_num, raw_seq, table_ids
+
+def predict_input(model_bert, tokenizer,model, batch_size, sql_data, table_data):
+    q_seq, col_seq, col_num, raw_q_seq, table_ids = to_batch_seq_predict(sql_data, table_data)
+    score = model.forward(model_bert, tokenizer, q_seq, col_seq, col_num)
+    sql_preds = model.gen_query(score, q_seq, col_seq, raw_q_seq)
+    sql_pred = eval(str(sql_preds[0]))
+    return sql_pred
+
 def get_pred(st,ed):
     f = 'data/pre_val.json'
     pred_queries = []

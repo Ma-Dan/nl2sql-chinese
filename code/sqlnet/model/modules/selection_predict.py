@@ -41,7 +41,7 @@ class SelPredictor(nn.Module):
         att = self.softmax(att_val.view((-1, max_x_len))).view(B, -1, max_x_len)
         K_sel_expand = (h_enc.unsqueeze(1) * att.unsqueeze(3)).sum(2)
 
-        sel_score = self.sel_out( self.sel_out_K(K_sel_expand) + self.sel_out_col(e_col) ).squeeze()
+        sel_score = self.sel_out( self.sel_out_K(K_sel_expand) + self.sel_out_col(e_col) ).squeeze(2)
         max_col_num = max(col_num)
         for idx, num in enumerate(col_num):
             if num < max_col_num:

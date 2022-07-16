@@ -35,7 +35,7 @@ class SelNumPredictor(nn.Module):
         # Then run the LSTM and predict select number
         e_num_col, col_num = col_name_encode(col_inp_var, col_name_len,
                                              col_len, self.sel_num_lstm)
-        num_col_att_val = self.sel_num_col_att(e_num_col).squeeze()
+        num_col_att_val = self.sel_num_col_att(e_num_col).squeeze(2)
         for idx, num in enumerate(col_num):
             if num < max(col_num):
                 num_col_att_val[idx, num:] = -1000000
@@ -46,7 +46,7 @@ class SelNumPredictor(nn.Module):
 
         h_num_enc, _ = run_lstm(self.sel_num_lstm, x_emb_var, x_len,hidden=(sel_num_h1, sel_num_h2))
 
-        num_att_val = self.sel_num_att(h_num_enc).squeeze()
+        num_att_val = self.sel_num_att(h_num_enc).squeeze(2)
         for idx, num in enumerate(x_len):
             if num < max_x_len:
                 num_att_val[idx, num:] = -1000000
