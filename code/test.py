@@ -23,7 +23,7 @@ if __name__ == '__main__':
         use_small=False
         gpu=args.gpu
         batch_size=64
-    
+
 
     dev_sql, dev_table, dev_db, test_sql, test_table, test_db = load_dataset(use_small=use_small, mode='test')
     #train_sql, train_table, train_db, dev_sql, dev_table, dev_db = load_dataset(use_small=use_small, mode='test')

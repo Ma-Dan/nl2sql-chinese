@@ -47,11 +47,11 @@ if __name__ == '__main__':
     # load dataset
     train_sql, train_table, train_db, dev_sql, dev_table, dev_db = load_dataset(use_small=use_small)
     model_bert, tokenizer, bert_config = get_bert(bert_path)
-    
+
     model = SQLNet(N_word=n_word, use_ca=args.ca, gpu=gpu)
     #optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0)
     opt, opt_bert = get_opt(model,model_bert,learning_rate,learning_rate_bert,fine_tune=args.fine_tune)
-    
+
     if args.restore:
         model_path= 'saved_model/best_model'
         print ("Loading trained model from %s" % model_path)
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         print ('Sel-Num: %.3f, Sel-Col: %.3f, Sel-Agg: %.3f, W-Num: %.3f, W-Col: %.3f, W-Op: %.3f, W-Val: %.3f, W-Rel: %.3f'%(
             dev_acc[0][0], dev_acc[0][1], dev_acc[0][2], dev_acc[0][3], dev_acc[0][4], dev_acc[0][5], dev_acc[0][6], dev_acc[0][7]))
         # save the best model
-        
+
         if dev_acc[1] > best_lf:
             best_lf = dev_acc[1]
             best_lf_idx = i + 1
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         if dev_acc[2] > best_ex:
             best_ex = dev_acc[2]
             best_ex_idx = i + 1
-        
+
 
         # record the best score of each sub-task
         if True:

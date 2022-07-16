@@ -216,7 +216,10 @@ class SQLNetCondPredictor(nn.Module):
                     self.cond_str_out_col(col_ext)).squeeze()
             for b, num in enumerate(x_len):
                 if num < max_x_len:
-                    cond_str_score[b, :, :, num:] = -100
+                    try:
+                        cond_str_score[b, :, :, num:] = -100
+                    except:
+                        print(cond_str_score)
         else:
             h_ext = h_str_enc.unsqueeze(1).unsqueeze(1)
             col_ext = col_emb.unsqueeze(2).unsqueeze(2)
