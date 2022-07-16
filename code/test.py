@@ -9,7 +9,8 @@ if __name__ == '__main__':
     parser.add_argument('--toy', action='store_true', help='Small batchsize for fast debugging.')
     parser.add_argument('--ca', action='store_true', help='Whether use column attention.')
     parser.add_argument('--train_emb', action='store_true', help='Use trained word embedding for SQLNet.')
-    parser.add_argument('--output_dir', type=str, default='', help='Output path of prediction result')
+    parser.add_argument('--dev_output_dir', type=str, default='', help='Output path of dev prediction result')
+    parser.add_argument('--test_output_dir', type=str, default='', help='Output path of test prediction result')
     parser.add_argument('--mode_type', type=int, default=1, help='which mode')
     args = parser.parse_args()
 
@@ -22,7 +23,7 @@ if __name__ == '__main__':
     else:
         use_small=False
         gpu=args.gpu
-        batch_size=64
+        batch_size=8
 
 
     dev_sql, dev_table, dev_db, test_sql, test_table, test_db = load_dataset(use_small=use_small, mode='test')
@@ -37,6 +38,11 @@ if __name__ == '__main__':
     dev_acc = epoch_acc(model_bert, tokenizer,model, batch_size, dev_sql, dev_table, dev_db, args.mode_type)
     print ('Dev Logic Form Accuracy: %.3f, Execution Accuracy: %.3f' % (dev_acc[1], dev_acc[2]))
 
-    print ("Start to predict test set")
-    predict_test(model_bert, tokenizer, model, batch_size, test_sql, test_table, args.output_dir)
-    print ("Output path of prediction result is %s" % args.output_dir)
+    if args.mode_type == 1:
+        print ("Start to predict val set")
+        predict_test(model_bert, tokenizer, model, batch_size, dev_sql, dev_table, args.dev_output_dir)
+        print ("Output path of prediction result is %s" % args.dev_output_dir)
+
+        print ("Start to predict test set")
+        predict_test(model_bert, tokenizer, model, batch_size, test_sql, test_table, args.test_output_dir)
+        print ("Output path of prediction result is %s" % args.test_output_dir)

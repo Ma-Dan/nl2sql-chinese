@@ -35,8 +35,8 @@ def load_data(sql_paths, table_paths, use_small=False):
     #如果标注数据的table_id有对应的数据表，就放入ret_sql_data中
     ret_sql_data = []
     for sql in sql_data:
-        if sql[u'table_id'] in table_data:    
-            ret_sql_data.append(sql)          
+        if sql[u'table_id'] in table_data:
+            ret_sql_data.append(sql)
 
     return ret_sql_data, table_data
 
@@ -58,7 +58,7 @@ def conds_ques_wrong(conds,question):
         if cond[2] not in question:
             return True
     return False
-    
+
 def to_batch_seq(sql_data, table_data, idxes, st, ed, ret_vis_data=False):
     q_seq = []
     col_seq = []
@@ -140,7 +140,7 @@ def epoch_train(model_bert, tokenizer,model, opt,opt_bert, batch_size, sql_data,
         score = model.forward(model_bert, tokenizer,q_seq, col_seq, col_num, gt_where=gt_where_seq, gt_cond=gt_cond_seq, gt_sel=gt_sel_seq, gt_sel_num=gt_sel_num)
         # sel_num_score, sel_col_score, sel_agg_score, cond_score, cond_rela_score
         # compute loss
-        
+
         loss = model.loss(score, ans_seq, gt_where_seq)
         cum_loss += loss.data.cpu().numpy()*(ed - st)
         opt.zero_grad()
@@ -153,7 +153,7 @@ def epoch_train(model_bert, tokenizer,model, opt,opt_bert, batch_size, sql_data,
 def predict_test(model_bert, tokenizer,model, batch_size, sql_data, table_data, output_path):
     model.eval()
     perm = list(range(len(sql_data)))
-    fw = open(output_path,'w')
+    fw = open(output_path,'w', encoding='utf-8')
     for st in tqdm(range(len(sql_data)//batch_size+1)):
         ed = (st+1)*batch_size if (st+1)*batch_size < len(perm) else len(perm)
         st = st * batch_size
@@ -206,7 +206,7 @@ def epoch_acc(model_bert, tokenizer, model, batch_size, sql_data, table_data, db
             pred_queries = get_pred(st,ed)
             # generate predicted format
         one_err, tot_err = model.check_acc(raw_data, pred_queries, query_gt)
-        
+
         one_acc_num += (ed-st-one_err)
         tot_acc_num += (ed-st-tot_err)
 
@@ -248,7 +248,7 @@ def gen_l_hpu(i_hds):
     i_hds = [(17, 18), (19, 21), (22, 23), (24, 25), (26, 29), (30, 34)])
     """
     l_hpu = []
-    for i,i_hds1 in enumerate(i_hds):       
+    for i,i_hds1 in enumerate(i_hds):
         for (a,b) in i_hds1:
             l_hpu.append(b - a)
     return l_hpu
@@ -367,7 +367,7 @@ def get_bert_output(model_bert, tokenizer, nlu_t, hds, max_seq_length):
         # The mask has 1 for real tokens and 0 for padding tokens. Only real
         # tokens are attended to.
         input_mask1 = [1] * len(input_ids1)
-        
+
         # 3. Zero-pad up to the sequence length.
         while len(input_ids1) < max_seq_length:
             input_ids1.append(0)
@@ -448,7 +448,7 @@ def get_wemb_h(i_hds, l_hpu, l_hs, hS, num_hidden_layers, all_encoder_layer, num
     ]
     """
     bS = len(l_hs)
-    
+
     l_hpu_max = max(l_hpu)
     num_of_all_hds = sum(l_hs)
     wemb_h = torch.zeros([num_of_all_hds, l_hpu_max, hS * num_out_layers_h]).to(device)
@@ -484,21 +484,21 @@ def gen_ques_emb(model_bert, tokenizer,q_seq,col_seq):
     wemb_h = Variable(wemb_h)
     B = len(q_seq)
     x_len = np.zeros(B, dtype=np.int64)
-    for i in range(0,len(q_seq)):        
+    for i in range(0,len(q_seq)):
         x_len[i] = i_nlu[i][1] - i_nlu[i][0]
-    
+
     C = 0
     for i ,i_hds1 in enumerate(i_hds):
         for (a,b) in i_hds1:
             C = C+1
     name_len = np.zeros(C,dtype=np.int64)
-            
+
     m = 0
     num = 0
     for i ,i_hds1 in enumerate(i_hds):
         for (a,b) in i_hds1:
             num = b-a
-            name_len[m] = num          
+            name_len[m] = num
             m = m+1
     col_len = gen_col_batch(col_seq)
 
@@ -511,7 +511,7 @@ def gen_col_batch(col_seq):
     for b, one_cols in enumerate(col_seq):
         names = names + one_cols
         col_len[b] = len(one_cols)
-    
+
     return col_len
 
 def str_list_to_batch(str_list):
@@ -546,18 +546,18 @@ def char_base_to_raw_text(q_seq,col_seq):
             c_tem.append(c_sub_tem)
             string = '1'
         c_seq_new.append(c_tem)
-        
+
     return q_seq_new,c_seq_new
-    
-    
+
+
 if __name__ == '__main__':
     bert_path = 'chinese_L-12_H-768_A-12'
     model_bert, tokenizer, bert_config = get_bert(bert_path)
-    
+
     q_seq = [['P', 'E', '(', '对', '应', '2', '0', '1', '8', '.', '1', '0', '.', '3', '1', '收', '盘', '价', '）']]
     col_seq = [[['P', 'E', '(', '对', '应', '2', '0', '1', '8', '.', '1', '0', '.', '3', '1', '收', '盘', '价', '）']]]
     q_seq,col_seq = char_base_to_raw_text(q_seq,col_seq)
-    
+
     '''
     q_seq = [['你好啊，你帮我算一下到底有多少家公司一六年定向增发新股，并且是为了融资收购其他资产的呀']]
     col_seq = [[['时间'],['你好呀']]]
@@ -570,4 +570,4 @@ if __name__ == '__main__':
     print(col_len)
 
 
-    
+
